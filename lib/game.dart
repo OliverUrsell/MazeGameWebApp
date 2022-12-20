@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:maze_game_web_app/maze_socket.dart';
 
+import 'maze.dart';
+
 class Game extends StatefulWidget {
 
   final String code;
@@ -18,15 +20,24 @@ class _GameState extends State<Game> {
   @override
   Widget build(BuildContext context) {
 
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      body: Center(
-        child: StreamBuilder(
-          stream: MazeSocket().getStream(),
-          builder: (context, snapshot) {
-            print(snapshot.hasData ? '${snapshot.data}' : 'no data');
-            return Text(snapshot.hasData ? '${snapshot.data}' : 'no data');
-          },
-        ),
+      backgroundColor: Colors.black45,
+      body: StreamBuilder(
+        stream: MazeSocket().getStream(),
+        builder: (context, snapshot) {
+          if(!snapshot.hasData) return Container();
+
+          String rawJSONdata = snapshot.data! as String;
+          return Align(
+            alignment: Alignment.center,
+            child: Maze(
+              rawJSON: rawJSONdata,
+              height: screenHeight*0.8,
+            ),
+          );
+        },
       ),
     );
   }
@@ -35,6 +46,5 @@ class _GameState extends State<Game> {
   void initState() {
     super.initState();
     MazeSocket().sendMessage("${widget.code} JoinGame");
-    MazeSocket().sendMessage("Hello From Web App");
   }
 }
