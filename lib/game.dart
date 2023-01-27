@@ -16,6 +16,15 @@ class Game extends StatefulWidget {
 
 class _GameState extends State<Game> {
 
+  String? rawMazeJSON;
+
+  void handleStreamSnapshot(AsyncSnapshot snapshot){
+    if(!snapshot.hasData) return;
+    print(snapshot.data! as String);
+    String rawData = snapshot.data! as String;
+
+    if(rawData.startsWith("MAZE ")) rawMazeJSON = rawData.replaceFirst("MAZE ", ""); return;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +36,14 @@ class _GameState extends State<Game> {
       body: StreamBuilder(
         stream: MazeSocket().getStream(),
         builder: (context, snapshot) {
-          if(!snapshot.hasData) return Container();
+          handleStreamSnapshot(snapshot);
 
-          String rawJSONdata = snapshot.data! as String;
+          if(rawMazeJSON == null) return Container();
+
           return Align(
             alignment: Alignment.center,
             child: Maze(
-              rawJSON: rawJSONdata,
+              rawJSON: rawMazeJSON!,
               height: screenHeight*0.8,
             ),
           );

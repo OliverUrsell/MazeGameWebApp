@@ -34,7 +34,6 @@ class Maze extends StatefulWidget {
         return "2WallsCorner.png";
       case 3:
         return "3Walls.png";
-        // return OneExitBP;
       case 4:
         return "4Walls.png";
       default:
@@ -102,26 +101,18 @@ class _MazeState extends State<Maze> {
     super.initState();
     Map<String, dynamic> data = jsonDecode(widget.rawJSON);
 
-    print(widget.rawJSON);
-
     mazeWidth = data["width"];
     mazeDepth = data["depth"];
 
     List<List<MazeNode?>> initialNodes = List.generate(mazeDepth, (p) => List.filled(mazeWidth, null));
 
     for (var nodeMap in data["nodes"]!) {
-      print(nodeMap["x"]);
-      print(nodeMap["y"]);
-      print("");
       initialNodes[nodeMap["x"]][nodeMap["y"]] = MazeNode(
           widget.height/mazeDepth, widget.height/mazeDepth,
           nodeMap["x"] as int, nodeMap["y"] as int, nodeMap["north"], nodeMap["east"], nodeMap["south"], nodeMap["west"]
       );
     }
 
-    print(initialNodes.map((e) => e.map((e) => e!.X)));
-
-    // nodes = initialNodes.map((List<MazeNode?> row) => row.cast<MazeNode>()).toList();
     nodes = initialNodes.map((List<MazeNode?> row) => row.cast<MazeNode>()).toList();
   }
 

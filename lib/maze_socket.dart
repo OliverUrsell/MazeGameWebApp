@@ -21,7 +21,6 @@ class MazeSocket {
   late WebSocketChannel _channel;
 
   MazeSocket._() {
-
     _channel = WebSocketChannel.connect(
       Uri.parse(_uri),
     );
