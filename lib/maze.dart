@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import 'SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight.dart';
 
@@ -8,8 +9,10 @@ class Maze extends StatefulWidget {
 
   final String rawJSON;
   final double height;
+  final String? rawPlayerPositionJSON;
+  final double positionIndicatorRadii;
 
-  const Maze({Key? key, required this.rawJSON, this.height=1000}) : super(key: key);
+  const Maze({Key? key, required this.rawJSON, this.rawPlayerPositionJSON, this.positionIndicatorRadii=16, this.height=1000}) : super(key: key);
 
   @override
   State<Maze> createState() => _MazeState();
@@ -90,11 +93,37 @@ class Maze extends StatefulWidget {
 
 }
 
+class Tuple<T, U>{
+  final T x;
+  final U y;
+
+  Tuple(this.x, this.y);
+}
+
 class _MazeState extends State<Maze> {
 
   late List<List<MazeNode>> nodes;
   late final int mazeWidth;
   late final int mazeDepth;
+
+  Tuple<double, double> convertPlayerPositionToLeftBottomPosition(Tuple<double,double> playerPosition){
+
+    double cellSize = widget.height / mazeDepth;
+
+    return Tuple(
+        (playerPosition.x+0.5)*cellSize-widget.positionIndicatorRadii,
+        (playerPosition.y+0.5)*cellSize-widget.positionIndicatorRadii
+    );
+  }
+
+  Tuple<double, double> getPaddingFromPlayerPosition(String rawPlayerPositionJSON){
+    // Json we are decoding should look something like this:
+    // {"player_x":0, "player_y":0}
+    Map<String, dynamic> data = jsonDecode(rawPlayerPositionJSON);
+    double x = data["player_x"] as double;
+    double y = data["player_y"] as double;
+    return convertPlayerPositionToLeftBottomPosition(Tuple(x, y));
+  }
 
   @override
   void initState() {
@@ -127,17 +156,46 @@ class _MazeState extends State<Maze> {
       }
     }
 
-    return SizedBox(
-      width: widget.height/mazeDepth*mazeWidth,
-      height: widget.height,
-      child: GridView(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
-          crossAxisCount: mazeWidth,
-          height: widget.height/mazeDepth,
-          width: widget.height/mazeDepth,
+    if(widget.rawPlayerPositionJSON == null) {
+      return SizedBox(
+        width: widget.height / mazeDepth * mazeWidth,
+        height: widget.height,
+        child: GridView(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
+            crossAxisCount: mazeWidth,
+            height: widget.height / mazeDepth,
+            width: widget.height / mazeDepth,
+          ),
+          children: nodeWidgets,
         ),
-        children: nodeWidgets,
-      ),
+      );
+    }
+
+    Tuple<double,double> padding = getPaddingFromPlayerPosition(widget.rawPlayerPositionJSON!);
+
+    return Stack(
+      children: [
+        SizedBox(
+          width: widget.height / mazeDepth * mazeWidth,
+          height: widget.height,
+          child: GridView(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
+              crossAxisCount: mazeWidth,
+              height: widget.height / mazeDepth,
+              width: widget.height / mazeDepth,
+            ),
+            children: nodeWidgets,
+          ),
+        ),
+        Positioned(
+          left: padding.y,
+          bottom: padding.x,
+          child: CircleAvatar(
+            backgroundColor: Colors.amber,
+            radius: widget.positionIndicatorRadii,
+          ),
+        ),
+      ],
     );
   }
 }
