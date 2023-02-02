@@ -35,6 +35,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  void connectWithCode(){
+    if(codeStart != 4) {
+      return;
+    }
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return Game(code: controller.text);
+    }));
+  }
+
   TextEditingController controller = TextEditingController(
     text: "----",
   );
@@ -56,14 +65,12 @@ class _MyHomePageState extends State<MyHomePage> {
   TextStyle redGameNameStyle = GoogleFonts.limelight(
     textStyle: const TextStyle(
         color: Color.fromRGBO(230, 194, 50, 1),
-        fontSize: 96
     ),
   );
 
   TextStyle goldGameNameStyle = GoogleFonts.limelight(
     textStyle: const TextStyle(
         color: Color.fromRGBO(118, 4, 10, 1),
-        fontSize: 96
     ),
   );
 
@@ -72,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     // The position the code ends and the hyphens start
-    double screenHeight = MediaQuery.of(context).size.height;
+    Size screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: codeStart==4 ? Colors.black : const Color.fromRGBO(50, 73, 80, 1.0),
@@ -83,16 +90,23 @@ class _MyHomePageState extends State<MyHomePage> {
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              Padding(
-                padding: EdgeInsets.fromLTRB(0, 1/10*screenHeight, 0, 0),
-                child: GlowText(
-                  "The Falcon's Nest Hotel",
-
-                  style: codeStart==4 ? goldGameNameStyle : redGameNameStyle,
+              Container(
+                width: screenSize.width,
+                padding: EdgeInsets.fromLTRB(0, 1/10*screenSize.height, 0, 0),
+                child: FittedBox(
+                  fit: BoxFit.fill,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: GlowText(
+                      "The Falcon's Nest Hotel",
+                      style: codeStart==4 ? goldGameNameStyle : redGameNameStyle,
+                      offset: const Offset(0, 0.5),
+                    ),
+                  ),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(0, 1/10*screenHeight, 0, 0),
+                padding: EdgeInsets.fromLTRB(0, 1/10*screenSize.height, 0, 0),
                 child: const Text(
                   "Enter Code:",
                   style: TextStyle(
@@ -155,19 +169,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   onTap: () {
                     controller.selection = TextSelection.fromPosition(TextPosition(offset: codeStart));
                   },
+                  onSubmitted: (text) => connectWithCode(),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(0, 1/10*screenHeight, 0, 0),
+                padding: EdgeInsets.fromLTRB(0, 1/10*screenSize.height, 0, 0),
                 child: TextButton(
-                  onPressed: () {
-                    if(codeStart != 4) {
-                      return;
-                    }
-                    Navigator.push(context, MaterialPageRoute(builder: (context) {
-                      return Game(code: controller.text);
-                    }));
-                  },
+                  onPressed: connectWithCode,
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
