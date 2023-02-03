@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:maze_game_web_app/MazePositionIndicator.dart';
 
 import 'SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight.dart';
 
@@ -9,10 +10,10 @@ class Maze extends StatefulWidget {
 
   final String rawJSON;
   final double height;
-  final String? rawPlayerPositionJSON;
+  final String? rawPositionsJSON;
   final double positionIndicatorRadii;
 
-  const Maze({Key? key, required this.rawJSON, this.rawPlayerPositionJSON, this.positionIndicatorRadii=16, this.height=1000}) : super(key: key);
+  const Maze({Key? key, required this.rawJSON, this.rawPositionsJSON, this.positionIndicatorRadii=16, this.height=1000}) : super(key: key);
 
   @override
   State<Maze> createState() => _MazeState();
@@ -105,8 +106,9 @@ class _MazeState extends State<Maze> {
   late List<List<MazeNode>> nodes;
   late final int mazeWidth;
   late final int mazeDepth;
+  late final Tuple<double, double> goalPosition;
 
-  Tuple<double, double> convertPlayerPositionToLeftBottomPosition(Tuple<double,double> playerPosition){
+  Tuple<double, double> convertMazePositionToLeftBottomPosition(Tuple<double,double> playerPosition){
 
     double cellSize = widget.height / mazeDepth;
 
@@ -116,13 +118,13 @@ class _MazeState extends State<Maze> {
     );
   }
 
-  Tuple<double, double> getPaddingFromPlayerPosition(String rawPlayerPositionJSON){
+  Tuple<double, double> getPlayerLeftBottomPosition(String rawPositionsJSON){
     // Json we are decoding should look something like this:
     // {"player_x":0, "player_y":0}
-    Map<String, dynamic> data = jsonDecode(rawPlayerPositionJSON);
+    Map<String, dynamic> data = jsonDecode(rawPositionsJSON);
     double x = data["player_x"] as double;
     double y = data["player_y"] as double;
-    return convertPlayerPositionToLeftBottomPosition(Tuple(x, y));
+    return convertMazePositionToLeftBottomPosition(Tuple(x, y));
   }
 
   @override
@@ -143,6 +145,8 @@ class _MazeState extends State<Maze> {
     }
 
     nodes = initialNodes.map((List<MazeNode?> row) => row.cast<MazeNode>()).toList();
+
+    goalPosition = Tuple(data["goal_x"], data["goal_y"]);
   }
 
   @override
@@ -156,11 +160,14 @@ class _MazeState extends State<Maze> {
       }
     }
 
-    if(widget.rawPlayerPositionJSON == null) {
-      return SizedBox(
+    Tuple<double,double> goalLeftBottomPosition = convertMazePositionToLeftBottomPosition(goalPosition);
+
+    List<Widget> stackChildren = [
+      SizedBox(
         width: widget.height / mazeDepth * mazeWidth,
         height: widget.height,
         child: GridView(
+          physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
             crossAxisCount: mazeWidth,
             height: widget.height / mazeDepth,
@@ -168,34 +175,29 @@ class _MazeState extends State<Maze> {
           ),
           children: nodeWidgets,
         ),
+      ),
+      MazePositionIndicator(
+        left: goalLeftBottomPosition.y,
+        bottom: goalLeftBottomPosition.x,
+        color: Colors.purple,
+        radius: widget.positionIndicatorRadii,
+      )
+    ];
+
+    if(widget.rawPositionsJSON != null) {
+      Tuple<double,double> playerLeftBottomPosition = getPlayerLeftBottomPosition(widget.rawPositionsJSON!);
+      stackChildren.add(
+        MazePositionIndicator(
+            left: playerLeftBottomPosition.y,
+            bottom: playerLeftBottomPosition.x,
+            color: Colors.amber,
+            radius: widget.positionIndicatorRadii,
+        )
       );
     }
 
-    Tuple<double,double> padding = getPaddingFromPlayerPosition(widget.rawPlayerPositionJSON!);
-
     return Stack(
-      children: [
-        SizedBox(
-          width: widget.height / mazeDepth * mazeWidth,
-          height: widget.height,
-          child: GridView(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
-              crossAxisCount: mazeWidth,
-              height: widget.height / mazeDepth,
-              width: widget.height / mazeDepth,
-            ),
-            children: nodeWidgets,
-          ),
-        ),
-        Positioned(
-          left: padding.y,
-          bottom: padding.x,
-          child: CircleAvatar(
-            backgroundColor: Colors.amber,
-            radius: widget.positionIndicatorRadii,
-          ),
-        ),
-      ],
+      children: stackChildren,
     );
   }
 }

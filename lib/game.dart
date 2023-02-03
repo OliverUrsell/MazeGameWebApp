@@ -16,7 +16,7 @@ class Game extends StatefulWidget {
 
 class _GameState extends State<Game> {
 
-  String? rawMazeJSON, rawPlayerPositionJson;
+  String? rawMazeJSON, rawPositionsJson;
 
   void handleStreamSnapshot(AsyncSnapshot snapshot){
     if(!snapshot.hasData) return;
@@ -24,7 +24,7 @@ class _GameState extends State<Game> {
     String rawData = snapshot.data! as String;
 
     if(rawData.startsWith("MAZE ")) {rawMazeJSON = rawData.replaceFirst("MAZE ", ""); return;}
-    if(rawData.startsWith("PlayerPosition ")) {rawPlayerPositionJson = rawData.replaceFirst("PlayerPosition ", ""); return;}
+    if(rawData.startsWith("Positions ")) {rawPositionsJson = rawData.replaceFirst("Positions ", ""); return;}
   }
 
   @override
@@ -45,7 +45,7 @@ class _GameState extends State<Game> {
             alignment: Alignment.center,
             child: Maze(
               rawJSON: rawMazeJSON!,
-              rawPlayerPositionJSON: rawPlayerPositionJson,
+              rawPositionsJSON: rawPositionsJson,
               height: screenHeight*0.8,
             ),
           );
