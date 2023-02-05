@@ -44,6 +44,7 @@ class _GameState extends State<Game> {
           return Align(
             alignment: Alignment.center,
             child: Maze(
+              playerType: PlayerType.mazeGuide,
               rawJSON: rawMazeJSON!,
               rawPositionsJSON: rawPositionsJson,
               height: screenHeight*0.8,

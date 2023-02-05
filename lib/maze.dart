@@ -6,14 +6,31 @@ import 'package:maze_game_web_app/MazePositionIndicator.dart';
 
 import 'SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight.dart';
 
+enum PlayerType{
+  monsterController,
+  mazeGuide
+}
+
 class Maze extends StatefulWidget {
 
   final String rawJSON;
   final double height;
   final String? rawPositionsJSON;
   final double positionIndicatorRadii;
+  final PlayerType playerType;
+  final bool showMonster, showPlayer, showGoal;
 
-  const Maze({Key? key, required this.rawJSON, this.rawPositionsJSON, this.positionIndicatorRadii=16, this.height=1000}) : super(key: key);
+  const Maze({
+    Key? key,
+    required this.playerType,
+    required this.rawJSON,
+    this.rawPositionsJSON,
+    this.positionIndicatorRadii=16,
+    this.height=1000,
+  }) : showMonster=playerType==PlayerType.monsterController,
+        showPlayer=playerType==PlayerType.mazeGuide,
+        showGoal=playerType==PlayerType.mazeGuide,
+        super(key: key);
 
   @override
   State<Maze> createState() => _MazeState();
@@ -185,34 +202,47 @@ class _MazeState extends State<Maze> {
           children: nodeWidgets,
         ),
       ),
-      MazePositionIndicator(
-        left: goalLeftBottomPosition.y,
-        bottom: goalLeftBottomPosition.x,
-        color: Colors.purple,
-        radius: widget.positionIndicatorRadii,
-      )
     ];
 
-    if(widget.rawPositionsJSON != null) {
-      Tuple<double,double> playerLeftBottomPosition = getPlayerLeftBottomPosition(widget.rawPositionsJSON!);
+    if(widget.showGoal) {
       stackChildren.add(
         MazePositionIndicator(
-            left: playerLeftBottomPosition.y,
-            bottom: playerLeftBottomPosition.x,
-            color: Colors.amber,
-            radius: widget.positionIndicatorRadii,
+          left: goalLeftBottomPosition.y,
+          bottom: goalLeftBottomPosition.x,
+          color: Colors.purple,
+          radius: widget.positionIndicatorRadii,
         )
       );
+    }
 
-      Tuple<double,double> monsterLeftBottomPosition = getMonsterLeftBottomPosition(widget.rawPositionsJSON!);
-      stackChildren.add(
-          MazePositionIndicator(
-            left: monsterLeftBottomPosition.y,
-            bottom: monsterLeftBottomPosition.x,
-            color: Colors.red,
-            radius: widget.positionIndicatorRadii,
-          )
-      );
+    if(widget.rawPositionsJSON != null) {
+      if(widget.showPlayer) {
+        Tuple<double,
+            double> playerLeftBottomPosition = getPlayerLeftBottomPosition(
+            widget.rawPositionsJSON!);
+        stackChildren.add(
+            MazePositionIndicator(
+              left: playerLeftBottomPosition.y,
+              bottom: playerLeftBottomPosition.x,
+              color: Colors.amber,
+              radius: widget.positionIndicatorRadii,
+            )
+        );
+      }
+
+      if(widget.showMonster) {
+        Tuple<double,
+            double> monsterLeftBottomPosition = getMonsterLeftBottomPosition(
+            widget.rawPositionsJSON!);
+        stackChildren.add(
+            MazePositionIndicator(
+              left: monsterLeftBottomPosition.y,
+              bottom: monsterLeftBottomPosition.x,
+              color: Colors.red,
+              radius: widget.positionIndicatorRadii,
+            )
+        );
+      }
 
     }
 
