@@ -120,10 +120,19 @@ class _MazeState extends State<Maze> {
 
   Tuple<double, double> getPlayerLeftBottomPosition(String rawPositionsJSON){
     // Json we are decoding should look something like this:
-    // {"player_x":0, "player_y":0}
+    // {"player_x":0, "player_y":0, "monster_x":0, "monster_y":0}
     Map<String, dynamic> data = jsonDecode(rawPositionsJSON);
     double x = data["player_x"] as double;
     double y = data["player_y"] as double;
+    return convertMazePositionToLeftBottomPosition(Tuple(x, y));
+  }
+
+  Tuple<double, double> getMonsterLeftBottomPosition(String rawPositionsJSON){
+    // Json we are decoding should look something like this:
+    // {"player_x":0, "player_y":0, "monster_x":0, "monster_y":0}
+    Map<String, dynamic> data = jsonDecode(rawPositionsJSON);
+    double x = data["monster_x"] as double;
+    double y = data["monster_y"] as double;
     return convertMazePositionToLeftBottomPosition(Tuple(x, y));
   }
 
@@ -194,6 +203,17 @@ class _MazeState extends State<Maze> {
             radius: widget.positionIndicatorRadii,
         )
       );
+
+      Tuple<double,double> monsterLeftBottomPosition = getMonsterLeftBottomPosition(widget.rawPositionsJSON!);
+      stackChildren.add(
+          MazePositionIndicator(
+            left: monsterLeftBottomPosition.y,
+            bottom: monsterLeftBottomPosition.x,
+            color: Colors.red,
+            radius: widget.positionIndicatorRadii,
+          )
+      );
+
     }
 
     return Stack(
