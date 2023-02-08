@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:maze_game_web_app/MazePositionIndicator.dart';
 
+import 'ArrowControls.dart';
 import 'SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight.dart';
 
 enum PlayerType{
@@ -17,20 +18,14 @@ class Maze extends StatefulWidget {
   final double height;
   final String? rawPositionsJSON;
   final double positionIndicatorRadii;
-  final PlayerType playerType;
-  final bool showMonster, showPlayer, showGoal;
 
   const Maze({
     Key? key,
-    required this.playerType,
     required this.rawJSON,
     this.rawPositionsJSON,
     this.positionIndicatorRadii=16,
     this.height=1000,
-  }) : showMonster=playerType==PlayerType.monsterController,
-        showPlayer=playerType==PlayerType.mazeGuide,
-        showGoal=playerType==PlayerType.mazeGuide,
-        super(key: key);
+  }) : super(key: key);
 
   @override
   State<Maze> createState() => _MazeState();
@@ -124,10 +119,30 @@ class _MazeState extends State<Maze> {
   late final int mazeWidth;
   late final int mazeDepth;
   late final Tuple<double, double> goalPosition;
+  late PlayerType _playerType;
+  late bool showMonster, showPlayer, showGoal;
+  late double mazeWidgetHeight = _playerType==PlayerType.monsterController?widget.height*0.8:widget.height;
+
+  set playerType(PlayerType pt){
+    _playerType = pt;
+    if(_playerType == PlayerType.mazeGuide){
+      showMonster = false;
+      showPlayer = true;
+      showGoal = true;
+    }else{
+      showMonster = true;
+      showPlayer = false;
+      showGoal = false;
+    }
+  }
+
+  PlayerType get playerType{
+    return _playerType;
+  }
 
   Tuple<double, double> convertMazePositionToLeftBottomPosition(Tuple<double,double> playerPosition){
 
-    double cellSize = widget.height / mazeDepth;
+    double cellSize = mazeWidgetHeight / mazeDepth;
 
     return Tuple(
         (playerPosition.x+0.5)*cellSize-widget.positionIndicatorRadii,
@@ -160,12 +175,13 @@ class _MazeState extends State<Maze> {
 
     mazeWidth = data["width"];
     mazeDepth = data["depth"];
+    playerType = data["player_type"]=="guide"?PlayerType.mazeGuide : PlayerType.monsterController;
 
     List<List<MazeNode?>> initialNodes = List.generate(mazeDepth, (p) => List.filled(mazeWidth, null));
 
     for (var nodeMap in data["nodes"]!) {
       initialNodes[nodeMap["x"]][nodeMap["y"]] = MazeNode(
-          widget.height/mazeDepth, widget.height/mazeDepth,
+          mazeWidgetHeight/mazeDepth, mazeWidgetHeight/mazeDepth,
           nodeMap["x"] as int, nodeMap["y"] as int, nodeMap["north"], nodeMap["east"], nodeMap["south"], nodeMap["west"]
       );
     }
@@ -190,21 +206,21 @@ class _MazeState extends State<Maze> {
 
     List<Widget> stackChildren = [
       SizedBox(
-        width: widget.height / mazeDepth * mazeWidth,
-        height: widget.height,
+        width: mazeWidgetHeight / mazeDepth * mazeWidth,
+        height: mazeWidgetHeight,
         child: GridView(
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
             crossAxisCount: mazeWidth,
-            height: widget.height / mazeDepth,
-            width: widget.height / mazeDepth,
+            height: mazeWidgetHeight / mazeDepth,
+            width: mazeWidgetHeight / mazeDepth,
           ),
           children: nodeWidgets,
         ),
       ),
     ];
 
-    if(widget.showGoal) {
+    if(showGoal) {
       stackChildren.add(
         MazePositionIndicator(
           left: goalLeftBottomPosition.y,
@@ -216,7 +232,7 @@ class _MazeState extends State<Maze> {
     }
 
     if(widget.rawPositionsJSON != null) {
-      if(widget.showPlayer) {
+      if(showPlayer) {
         Tuple<double,
             double> playerLeftBottomPosition = getPlayerLeftBottomPosition(
             widget.rawPositionsJSON!);
@@ -230,7 +246,7 @@ class _MazeState extends State<Maze> {
         );
       }
 
-      if(widget.showMonster) {
+      if(showMonster) {
         Tuple<double,
             double> monsterLeftBottomPosition = getMonsterLeftBottomPosition(
             widget.rawPositionsJSON!);
@@ -246,8 +262,26 @@ class _MazeState extends State<Maze> {
 
     }
 
-    return Stack(
-      children: stackChildren,
+    return _playerType==PlayerType.monsterController ? Column(
+      children: [
+        Stack(
+          children: stackChildren,
+        ),
+        ArrowControls(height: widget.height - mazeWidgetHeight,
+          north: () => print("north"),
+          east: () => print("east"),
+          south: () => print("south"),
+          west: () => print("west"),
+        ),
+      ]
+    )
+        :
+    Column(
+        children: [
+          Stack(
+            children: stackChildren,
+          ),
+        ]
     );
   }
 }
