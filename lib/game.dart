@@ -45,6 +45,7 @@ class _GameState extends State<Game> {
             alignment: Alignment.center,
             child: Maze(
               rawJSON: rawMazeJSON!,
+              mazeCode: widget.code,
               rawPositionsJSON: rawPositionsJson,
               height: screenHeight*0.8,
             ),

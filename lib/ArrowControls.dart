@@ -34,7 +34,7 @@ class ArrowControls extends StatelessWidget {
               SizedBox(width: height/3,),
               IconButton(
                 icon: const Icon(Icons.arrow_forward_sharp),
-                onPressed: west,
+                onPressed: east,
                 iconSize: height/3,
               ),
             ],

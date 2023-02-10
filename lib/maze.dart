@@ -6,6 +6,7 @@ import 'package:maze_game_web_app/MazePositionIndicator.dart';
 
 import 'ArrowControls.dart';
 import 'SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight.dart';
+import 'maze_socket.dart';
 
 enum PlayerType{
   monsterController,
@@ -18,9 +19,11 @@ class Maze extends StatefulWidget {
   final double height;
   final String? rawPositionsJSON;
   final double positionIndicatorRadii;
+  final String mazeCode;
 
   const Maze({
     Key? key,
+    required this.mazeCode,
     required this.rawJSON,
     this.rawPositionsJSON,
     this.positionIndicatorRadii=16,
@@ -267,11 +270,12 @@ class _MazeState extends State<Maze> {
         Stack(
           children: stackChildren,
         ),
+        //TODO: Make a "SendMonsterDirectionChange" function in MazeSocket
         ArrowControls(height: widget.height - mazeWidgetHeight,
-          north: () => print("north"),
-          east: () => print("east"),
-          south: () => print("south"),
-          west: () => print("west"),
+          north: () => MazeSocket().sendMessage("${widget.mazeCode} MonsterDirection north"),
+          east: () => MazeSocket().sendMessage("${widget.mazeCode} MonsterDirection east"),
+          south: () => MazeSocket().sendMessage("${widget.mazeCode} MonsterDirection south"),
+          west: () => MazeSocket().sendMessage("${widget.mazeCode} MonsterDirection west"),
         ),
       ]
     )
