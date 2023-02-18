@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:maze_game_web_app/maze_socket.dart';
 
 import 'maze.dart';
@@ -20,7 +21,7 @@ class _GameState extends State<Game> {
 
   void handleStreamSnapshot(AsyncSnapshot snapshot){
     if(!snapshot.hasData) return;
-    print(snapshot.data! as String);
+    // print("Received message: ${snapshot.data!}");
     String rawData = snapshot.data! as String;
 
     if(rawData.startsWith("MAZE ")) {rawMazeJSON = rawData.replaceFirst("MAZE ", ""); return;}
@@ -39,7 +40,22 @@ class _GameState extends State<Game> {
         builder: (context, snapshot) {
           handleStreamSnapshot(snapshot);
 
-          if(rawMazeJSON == null) return Container();
+          if(rawMazeJSON == null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  "Waiting for the VR player to start the game",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.azeretMono(
+                    textStyle: const TextStyle(
+                      fontSize: 48,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
 
           return Align(
             alignment: Alignment.center,
