@@ -119,9 +119,9 @@ class Tuple<T, U>{
 class _MazeState extends State<Maze> {
 
   late List<List<MazeNode>> nodes;
-  late final int mazeWidth;
-  late final int mazeDepth;
-  late final Tuple<double, double> goalPosition;
+  late int mazeWidth;
+  late int mazeDepth;
+  late Tuple<double, double> goalPosition;
   late PlayerType _playerType;
   late bool showMonster, showPlayer, showGoal;
   late double mazeWidgetHeight = _playerType==PlayerType.monsterController?widget.height*0.8:widget.height;
@@ -172,8 +172,8 @@ class _MazeState extends State<Maze> {
   }
 
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
+
     Map<String, dynamic> data = jsonDecode(widget.rawJSON);
 
     mazeWidth = data["width"];
@@ -192,10 +192,6 @@ class _MazeState extends State<Maze> {
     nodes = initialNodes.map((List<MazeNode?> row) => row.cast<MazeNode>()).toList();
 
     goalPosition = Tuple(data["goal_x"], data["goal_y"]);
-  }
-
-  @override
-  Widget build(BuildContext context) {
 
     List<Widget> nodeWidgets = List.empty(growable: true);
 
