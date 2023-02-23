@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class Maze extends StatefulWidget {
   final String? rawPositionsJSON;
   final double positionIndicatorRadii;
   final String mazeCode;
+  final double monsterSmellDistance;
 
   const Maze({
     Key? key,
@@ -28,6 +30,7 @@ class Maze extends StatefulWidget {
     this.rawPositionsJSON,
     this.positionIndicatorRadii=16,
     this.height=1000,
+    this.monsterSmellDistance=5,
   }) : super(key: key);
 
   @override
@@ -153,22 +156,22 @@ class _MazeState extends State<Maze> {
     );
   }
 
-  Tuple<double, double> getPlayerLeftBottomPosition(String rawPositionsJSON){
+  Tuple<double, double> getPlayerMazePosition(String rawPositionsJSON){
     // Json we are decoding should look something like this:
     // {"player_x":0, "player_y":0, "monster_x":0, "monster_y":0}
     Map<String, dynamic> data = jsonDecode(rawPositionsJSON);
     double x = data["player_x"] as double;
     double y = data["player_y"] as double;
-    return convertMazePositionToLeftBottomPosition(Tuple(x, y));
+    return Tuple(x, y);
   }
 
-  Tuple<double, double> getMonsterLeftBottomPosition(String rawPositionsJSON){
+  Tuple<double, double> getMonsterMazePosition(String rawPositionsJSON){
     // Json we are decoding should look something like this:
     // {"player_x":0, "player_y":0, "monster_x":0, "monster_y":0}
     Map<String, dynamic> data = jsonDecode(rawPositionsJSON);
     double x = data["monster_x"] as double;
     double y = data["monster_y"] as double;
-    return convertMazePositionToLeftBottomPosition(Tuple(x, y));
+    return Tuple(x, y);
   }
 
   @override
@@ -231,24 +234,41 @@ class _MazeState extends State<Maze> {
     }
 
     if(widget.rawPositionsJSON != null) {
-      if(showPlayer) {
+      if(showPlayer || showMonster) {
         Tuple<double,
-            double> playerLeftBottomPosition = getPlayerLeftBottomPosition(
+            double> playerMazePosition = getPlayerMazePosition(
             widget.rawPositionsJSON!);
-        stackChildren.add(
-            MazePositionIndicator(
-              left: playerLeftBottomPosition.y,
-              bottom: playerLeftBottomPosition.x,
-              color: Colors.amber,
-              radius: widget.positionIndicatorRadii,
-            )
-        );
+
+        bool monsterCloseEnough = false;
+
+        if(showMonster){
+          Tuple<double,
+              double> monsterLeftBottomPosition = getMonsterMazePosition(
+              widget.rawPositionsJSON!);
+
+          num squaredDistance = pow(playerMazePosition.x - monsterLeftBottomPosition.x, 2) + pow(playerMazePosition.y - monsterLeftBottomPosition.y, 2);
+          monsterCloseEnough = squaredDistance <= pow(widget.monsterSmellDistance, 2);
+        }
+
+        if(showPlayer || (showMonster && monsterCloseEnough)) {
+
+          Tuple<double, double> playerLeftBottomPosition = convertMazePositionToLeftBottomPosition(playerMazePosition);
+
+          stackChildren.add(
+              MazePositionIndicator(
+                left: playerLeftBottomPosition.y,
+                bottom: playerLeftBottomPosition.x,
+                color: Colors.amber,
+                radius: widget.positionIndicatorRadii,
+              )
+          );
+        }
       }
 
       if(showMonster) {
         Tuple<double,
-            double> monsterLeftBottomPosition = getMonsterLeftBottomPosition(
-            widget.rawPositionsJSON!);
+            double> monsterLeftBottomPosition = convertMazePositionToLeftBottomPosition(getMonsterMazePosition(
+            widget.rawPositionsJSON!));
         stackChildren.add(
             MazePositionIndicator(
               left: monsterLeftBottomPosition.y,
