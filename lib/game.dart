@@ -31,7 +31,7 @@ class _GameState extends State<Game> {
   @override
   Widget build(BuildContext context) {
 
-    double screenHeight = MediaQuery.of(context).size.height;
+    Size screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: Colors.black45,
@@ -57,13 +57,17 @@ class _GameState extends State<Game> {
             );
           }
 
-          return Align(
-            alignment: Alignment.center,
-            child: Maze(
-              rawJSON: rawMazeJSON!,
-              mazeCode: widget.code,
-              rawPositionsJSON: rawPositionsJson,
-              height: screenHeight*0.8,
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(0, 16.0, 0, 0),
+            child: Align(
+              alignment: Alignment.center,
+              child: Maze(
+                rawJSON: rawMazeJSON!,
+                mazeCode: widget.code,
+                rawPositionsJSON: rawPositionsJson,
+                height: screenSize.height*0.8,
+                width: screenSize.width*0.8,
+              ),
             ),
           );
         },

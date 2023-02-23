@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:maze_game_web_app/MazePositionIndicator.dart';
 
@@ -18,8 +17,8 @@ class Maze extends StatefulWidget {
 
   final String rawJSON;
   final double height;
+  final double width;
   final String? rawPositionsJSON;
-  final double positionIndicatorRadii;
   final String mazeCode;
   final double monsterSmellDistance;
 
@@ -27,9 +26,9 @@ class Maze extends StatefulWidget {
     Key? key,
     required this.mazeCode,
     required this.rawJSON,
+    required this.height,
+    required this.width,
     this.rawPositionsJSON,
-    this.positionIndicatorRadii=16,
-    this.height=1000,
     this.monsterSmellDistance=5,
   }) : super(key: key);
 
@@ -127,7 +126,9 @@ class _MazeState extends State<Maze> {
   late Tuple<double, double> goalPosition;
   late PlayerType _playerType;
   late bool showMonster, showPlayer, showGoal;
-  late double mazeWidgetHeight = _playerType==PlayerType.monsterController?widget.height*0.8:widget.height;
+  late double mazeNodesTotalHeight = _playerType==PlayerType.monsterController?widget.height*0.8:widget.height;
+  late double positionIndicatorRadii;
+  late double nodeSize;
 
   set playerType(PlayerType pt){
     _playerType = pt;
@@ -147,12 +148,9 @@ class _MazeState extends State<Maze> {
   }
 
   Tuple<double, double> convertMazePositionToLeftBottomPosition(Tuple<double,double> playerPosition){
-
-    double cellSize = mazeWidgetHeight / mazeDepth;
-
     return Tuple(
-        (playerPosition.x+0.5)*cellSize-widget.positionIndicatorRadii,
-        (playerPosition.y+0.5)*cellSize-widget.positionIndicatorRadii
+        (playerPosition.x+0.5)*nodeSize-positionIndicatorRadii,
+        (playerPosition.y+0.5)*nodeSize-positionIndicatorRadii
     );
   }
 
@@ -185,9 +183,12 @@ class _MazeState extends State<Maze> {
 
     List<List<MazeNode?>> initialNodes = List.generate(mazeDepth, (p) => List.filled(mazeWidth, null));
 
+    nodeSize = min(mazeNodesTotalHeight/mazeDepth, widget.width / mazeWidth);
+    positionIndicatorRadii = nodeSize*0.4;
+
     for (var nodeMap in data["nodes"]!) {
       initialNodes[nodeMap["x"]][nodeMap["y"]] = MazeNode(
-          mazeWidgetHeight/mazeDepth, mazeWidgetHeight/mazeDepth,
+          nodeSize, nodeSize,
           nodeMap["x"] as int, nodeMap["y"] as int, nodeMap["north"], nodeMap["east"], nodeMap["south"], nodeMap["west"]
       );
     }
@@ -208,14 +209,14 @@ class _MazeState extends State<Maze> {
 
     List<Widget> stackChildren = [
       SizedBox(
-        width: mazeWidgetHeight / mazeDepth * mazeWidth,
-        height: mazeWidgetHeight,
+        width: nodeSize * mazeWidth,
+        height: nodeSize * mazeDepth,
         child: GridView(
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight(
             crossAxisCount: mazeWidth,
-            height: mazeWidgetHeight / mazeDepth,
-            width: mazeWidgetHeight / mazeDepth,
+            height: nodeSize,
+            width: nodeSize,
           ),
           children: nodeWidgets,
         ),
@@ -228,7 +229,7 @@ class _MazeState extends State<Maze> {
           left: goalLeftBottomPosition.y,
           bottom: goalLeftBottomPosition.x,
           color: Colors.purple,
-          radius: widget.positionIndicatorRadii,
+          radius: positionIndicatorRadii,
         )
       );
     }
@@ -259,7 +260,7 @@ class _MazeState extends State<Maze> {
                 left: playerLeftBottomPosition.y,
                 bottom: playerLeftBottomPosition.x,
                 color: Colors.amber,
-                radius: widget.positionIndicatorRadii,
+                radius: positionIndicatorRadii,
               )
           );
         }
@@ -274,7 +275,7 @@ class _MazeState extends State<Maze> {
               left: monsterLeftBottomPosition.y,
               bottom: monsterLeftBottomPosition.x,
               color: Colors.red,
-              radius: widget.positionIndicatorRadii,
+              radius: positionIndicatorRadii,
             )
         );
       }
@@ -287,7 +288,7 @@ class _MazeState extends State<Maze> {
           children: stackChildren,
         ),
         //TODO: Make a "SendMonsterDirectionChange" function in MazeSocket
-        ArrowControls(height: widget.height - mazeWidgetHeight,
+        ArrowControls(height: widget.height - mazeNodesTotalHeight,
           north: () => MazeSocket().sendMessage("${widget.mazeCode} MonsterDirection north"),
           east: () => MazeSocket().sendMessage("${widget.mazeCode} MonsterDirection east"),
           south: () => MazeSocket().sendMessage("${widget.mazeCode} MonsterDirection south"),
