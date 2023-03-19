@@ -1,14 +1,25 @@
 
 import 'dart:async';
-import 'dart:io';
-
+import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+class TestModeMazeSocket{
+  Stream stream;
+  void Function(String) receiveFunction;
+
+  TestModeMazeSocket({
+    required this.stream,
+    required this.receiveFunction,
+  });
+
+}
 
 class MazeSocket {
 
   // There should only ever be one maze connection, so we can use a monomer pattern
   static MazeSocket? _instance;
   final String _uri = "ws://localhost:25567";
+  TestModeMazeSocket? _testMode;
 
   factory MazeSocket(){
     if(_instance == null){
@@ -26,13 +37,27 @@ class MazeSocket {
     );
   }
 
+  @visibleForTesting
+  void activateTestMode(TestModeMazeSocket testMode){
+    _testMode = testMode;
+  }
+
   void sendMessage(String message){
     print("Sending message $message");
+
+    if(_testMode != null){
+      _testMode!.receiveFunction(message);
+      return;
+    }
+
     _channel.sink.add("$message\n");
   }
 
   Stream getStream(){
-    BytesBuilder();
+    if(_testMode != null){
+      return _testMode!.stream;
+    }
+
     return _channel.stream;
   }
 

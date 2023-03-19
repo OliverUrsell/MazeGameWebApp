@@ -21,7 +21,7 @@ class _GameState extends State<Game> {
 
   void handleStreamSnapshot(AsyncSnapshot snapshot){
     if(!snapshot.hasData) return;
-    // print("Received message: ${snapshot.data!}");
+
     String rawData = snapshot.data! as String;
 
     if(rawData.startsWith("MAZE ")) {rawMazeJSON = rawData.replaceFirst("MAZE ", ""); return;}

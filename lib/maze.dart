@@ -158,8 +158,9 @@ class _MazeState extends State<Maze> {
     // Json we are decoding should look something like this:
     // {"player_x":0, "player_y":0, "monster_x":0, "monster_y":0}
     Map<String, dynamic> data = jsonDecode(rawPositionsJSON);
-    double x = data["player_x"] as double;
-    double y = data["player_y"] as double;
+    // Add .0 to convert to double if necessary, avoids a bug in testing where the values are integers
+    double x = data["player_x"] + .0;
+    double y = data["player_y"] + .0;
     return Tuple(x, y);
   }
 
@@ -167,8 +168,10 @@ class _MazeState extends State<Maze> {
     // Json we are decoding should look something like this:
     // {"player_x":0, "player_y":0, "monster_x":0, "monster_y":0}
     Map<String, dynamic> data = jsonDecode(rawPositionsJSON);
-    double x = data["monster_x"] as double;
-    double y = data["monster_y"] as double;
+
+    // Add .0 to convert to double if necessary, avoids a bug in testing where the values are integers
+    double x = data["monster_x"] + .0;
+    double y = data["monster_y"] + .0;
     return Tuple(x, y);
   }
 
@@ -195,7 +198,8 @@ class _MazeState extends State<Maze> {
 
     nodes = initialNodes.map((List<MazeNode?> row) => row.cast<MazeNode>()).toList();
 
-    goalPosition = Tuple(data["goal_x"], data["goal_y"]);
+    // Add .0 to convert to double if necessary, avoids a bug in testing where the values are integers
+    goalPosition = Tuple(data["goal_x"] + .0, data["goal_y"] + .0);
 
     List<Widget> nodeWidgets = List.empty(growable: true);
 
