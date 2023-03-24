@@ -1,6 +1,6 @@
 
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class TestModeMazeSocket{
@@ -43,7 +43,9 @@ class MazeSocket {
   }
 
   void sendMessage(String message){
-    print("Sending message $message");
+    if (kDebugMode) {
+      print("Sending message $message");
+    }
 
     if(_testMode != null){
       _testMode!.receiveFunction(message);

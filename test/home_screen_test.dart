@@ -98,8 +98,7 @@ void main() {
 
     // Verify that the page is now a Game and it has the correct code
     expect(find.byType(Game), findsOneWidget);
-    Game g = (await find.byType(Game)).evaluate().first.widget as Game;
+    Game g = (find.byType(Game)).evaluate().first.widget as Game;
     expect(g.code, "1234");
-
   });
 }

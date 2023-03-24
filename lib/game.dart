@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:maze_game_web_app/maze_socket.dart';
@@ -23,6 +23,9 @@ class _GameState extends State<Game> {
     if(!snapshot.hasData) return;
 
     String rawData = snapshot.data! as String;
+    if (kDebugMode) {
+      print("Received message: $rawData");
+    }
 
     if(rawData.startsWith("MAZE ")) {rawMazeJSON = rawData.replaceFirst("MAZE ", ""); return;}
     if(rawData.startsWith("Positions ")) {rawPositionsJson = rawData.replaceFirst("Positions ", ""); return;}

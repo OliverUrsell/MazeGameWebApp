@@ -3,8 +3,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:maze_game_web_app/ArrowControls.dart';
-import 'package:maze_game_web_app/MazePositionIndicator.dart';
+import 'package:maze_game_web_app/arrow_controls.dart';
+import 'package:maze_game_web_app/maze_position_indicator.dart';
 import 'package:maze_game_web_app/game.dart';
 
 import 'package:maze_game_web_app/main.dart';
@@ -145,8 +145,6 @@ void main() {
 
     // Make sure other the player position has been initialised
     expect(find.byType(MazePositionIndicator), findsNWidgets(2));
-
-    print((find.byType(MazePositionIndicator)).evaluate().length);
 
     // Make sure the monster has not been initialised
     goal = (find.byType(MazePositionIndicator)).evaluate().first.widget as MazePositionIndicator;

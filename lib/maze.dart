@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:maze_game_web_app/MazePositionIndicator.dart';
+import 'package:maze_game_web_app/maze_position_indicator.dart';
 
-import 'ArrowControls.dart';
-import 'SliverGridDelegateWithFixedCrossAxisCountAndFixedHeight.dart';
+import 'arrow_controls.dart';
+import 'sliver_grid_delegate_with_fixed_cross_axis_count_and_fixed_height.dart';
 import 'maze_socket.dart';
 
 enum PlayerType{
